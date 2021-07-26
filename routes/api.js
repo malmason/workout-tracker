@@ -35,9 +35,31 @@ router.put("/api/workouts/:id", (req, res) => {
 });
 
 router.get("/api/workouts", (req, res) => {
-  Workout.find({})
-  .sort({ day: 1 })
-  .then(dbWorkout => {
+  Workout.aggregate().project({'day':1,'exercises.duration':1,'exercises.sets':1,'exercises.weight':1,'exercises.reps':1,'exercises.distance':1,'exercises.type':1,'exercises.name':1}).addFields(
+  {totalDuration:{$sum: '$exercises.duration'},totalSets:{$sum: '$exercises.sets'},totalWeight:{$sum:'$exercises.weight'},totalReps:{$sum:'$exercises.reps'},
+  totalDistance:{$sum:'$exercises.distance'}})
+    .sort({ day: 1 })
+    .then(dbWorkout => {
+      res.json(dbWorkout);
+  })
+    .catch(err => {
+    res.status(400).json(err);
+  });
+});
+
+router.get("/api/workouts/range", (req, res) => {
+  const endDate = new Date().toISOString();
+  const startDate = new Date().setDate(new Date().getDate() -7);
+  const starting = new Date(startDate).toISOString();
+
+  console.log(endDate);
+  console.log(starting);
+  
+  Workout.aggregate().project({'day':1,'exercises.duration':1,'exercises.sets':1,'exercises.weight':1,'exercises.reps':1,'exercises.distance':1,'exercises.type':1,'exercises.name':1}).addFields(
+    {totalDuration:{$sum: '$exercises.duration'},totalSets:{$sum: '$exercises.sets'},totalWeight:{$sum:'$exercises.weight'},totalReps:{$sum:'$exercises.reps'},
+    totalDistance:{$sum:'$exercises.distance'}})
+    .sort({ day: 1 })
+    .then(dbWorkout => {
     res.json(dbWorkout);
   })
   .catch(err => {
@@ -45,6 +67,7 @@ router.get("/api/workouts", (req, res) => {
   });
 });
 
+// Review this route, may need updating. 
 router.get("/exercise", (req, res) => {
 
   Workout.find({})
