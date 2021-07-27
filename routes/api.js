@@ -47,14 +47,16 @@ router.get("/api/workouts", (req, res) => {
 });
 
 router.get("/api/workouts/range", (req, res) => {
-  const endDate = new Date().toISOString();
-  const startDate = new Date().setDate(new Date().getDate() -7);
-  const starting = new Date(startDate).toISOString();
+    // const endDate = new Date().toISOString();
+   // const starting = new Date(startDate).toISOString();
 
-  console.log(endDate);
-  console.log(starting);
+  const endDate = new Date();
+  const startDate = new Date().setDate(new Date().getDate() -6);
+ 
+  const beginningDate = new Date(startDate);
+  const endingDate = new Date(endDate);
   
-  Workout.aggregate().project({'day':1,'exercises.duration':1,'exercises.sets':1,'exercises.weight':1,'exercises.reps':1,'exercises.distance':1,'exercises.type':1,'exercises.name':1}).addFields(
+  Workout.aggregate([{$match: {day: {$gte: beginningDate, $lte: endingDate}}}]).project({'day':1,'exercises.duration':1,'exercises.sets':1,'exercises.weight':1,'exercises.reps':1,'exercises.distance':1,'exercises.type':1,'exercises.name':1}).addFields(
     {totalDuration:{$sum: '$exercises.duration'},totalSets:{$sum: '$exercises.sets'},totalWeight:{$sum:'$exercises.weight'},totalReps:{$sum:'$exercises.reps'},
     totalDistance:{$sum:'$exercises.distance'}})
     .sort({ day: 1 })
